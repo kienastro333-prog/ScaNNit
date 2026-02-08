@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ScaNNit - Lost & Found QR System</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#f7faff;
+    margin:0;
+    padding:0;
+}
+header{
+    background:#2a72ff;
+    color:white;
+    padding:20px;
+    text-align:center;
+}
+.container{padding:20px;}
+.card{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+    margin-bottom:20px;
+}
+button{
+    background:#2a72ff;
+    color:white;
+    border:none;
+    padding:10px;
+    border-radius:10px;
+    margin-top:10px;
+    width:100%;
+    font-size:16px;
+}
+input{
+    width:100%;
+    padding:10px;
+    border-radius:10px;
+    margin:5px 0;
+    border:1px solid #ccc;
+}
+.nav{
+    display:flex;
+    gap:5px;
+    margin-bottom:20px;
+}
+.nav button{width:100%;}
+
+.logo{
+    width:150px;
+    display:block;
+    margin:0 auto 15px auto;
+}
+canvas{
+    display:block;
+    margin:15px auto;
+}
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+</head>
+
+<body>
+
+<header>
+    <h1>ScaNNit</h1>
+    <p>Scan anything, track everything — your digital solution for QR codes and item management.</p>
+</header>
+
+<div class="container">
+
+<div class="nav">
+    <button onclick="showPage('home')">Home</button>
+    <button onclick="showPage('generate')">Generate QR</button>
+    <button onclick="showPage('scan')">Scan QR</button>
+    <button onclick="showPage('subscription')">PRO</button>
+</div>
+
+<!-- HOME -->
+<div id="home" class="page">
+    <img src="scannit-logo.png" class="logo">
+    <div class="card">
+        <h2>Welcome to ScaNNit</h2>
+        <p>A safe and non-invasive Lost & Found QR Code System.</p>
+        <ul>
+            <li>No tracking</li>
+            <li>No GPS</li>
+            <li>Only owner identification</li>
+        </ul>
+    </div>
+</div>
+
+<!-- GENERATE -->
+<div id="generate" class="page" style="display:none;">
+    <img src="scannit-logo.png" class="logo">
+    <div class="card">
+        <h2>Generate QR Code</h2>
+        <input id="ownerName" placeholder="Owner Name">
+        <input id="ownerSection" placeholder="Grade & Section">
+        <input id="ownerContact" placeholder="Contact (optional)">
+        <button onclick="generateQR()">Generate QR</button>
+        <canvas id="qrCanvas"></canvas>
+        <button onclick="saveQR()">Download QR</button>
+    </div>
+</div>
+
+<!-- SCAN -->
+<div id="scan" class="page" style="display:none;">
+    <img src="scannit-logo.png" class="logo">
+    <div class="card">
+        <h2>Scan QR</h2>
+        <input id="scanInput" placeholder="Paste QR link here">
+        <button onclick="scanQR()">Show Info</button>
+        <div id="scanResult"></div>
+    </div>
+</div>
+
+<!-- SUB -->
+<div id="subscription" class="page" style="display:none;">
+    <img src="scannit-logo.png" class="logo">
+    <div class="card">
+        <h2>ScaNNit PRO</h2>
+        <p>Unlimited QR & dashboard access</p>
+        <p>₱50 (Demo)</p>
+        <button onclick="subscribe()">Subscribe</button>
+    </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="page" style="display:none;">
+    <img src="scannit-logo.png" class="logo">
+    <div class="card">
+        <h2>Your Dashboard</h2>
+        <div id="dashboardContent"></div>
+    </div>
+</div>
+
+</div>
+
+<script>
+let isSubscribed=false;
+let items=[];
+
+function showPage(p){
+ document.querySelectorAll('.page').forEach(e=>e.style.display='none');
+ if(p==='dashboard'&&!isSubscribed){alert("PRO only");return;}
+ document.getElementById(p).style.display='block';
+}
+
+function generateQR(){
+ let n=ownerName.value;
+ let s=ownerSection.value;
+ let c=ownerContact.value;
+ if(!n||!s){alert("Complete info");return;}
+ let data=`Name:${n}\nSection:${s}\nContact:${c}`;
+ new QRious({element:qrCanvas,size:250,value:data});
+ items.push({n,s,c});
+}
+
+function saveQR(){
+ let link=document.createElement("a");
+ link.download="ScaNNit_QR.png";
+ link.href=qrCanvas.toDataURL();
+ link.click();
+}
+
+function scanQR(){
+ let t=scanInput.value.split("\n");
+ scanResult.innerHTML=`
+ <p><b>${t[0]}</b></p>
+ <p>${t[1]}</p>
+ <p>${t[2]||''}</p>
+ `;
+}
+
+function subscribe(){
+ isSubscribed=true;
+ showPage('dashboard');
+ renderDashboard();
+}
+
+function renderDashboard(){
+ dashboardContent.innerHTML="";
+ items.forEach((i,x)=>{
+  dashboardContent.innerHTML+=`
+   <p><b>Item ${x+1}</b><br>${i.n}<br>${i.s}<br>${i.c||''}</p><hr>`;
+ });
+}
+</script>
+
+</body>
+</html>
